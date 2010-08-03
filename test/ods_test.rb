@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-require 'test/unit'
-require File.dirname(File.expand_path(__FILE__)) + '/../lib/ods'
+require 'test/test_helper'
 
 class OdsTest < Test::Unit::TestCase
   BASE_DIR = File.dirname(File.expand_path(__FILE__))
   def setup
-    @ods = Ods.new(BASE_DIR + '/cook.ods')
-    @file_path = BASE_DIR + '/modified.ods'
-  end
-
-  def teardown
-    File.unlink(@file_path) if File.exists?(@file_path)
+    super
+    @ods = Ods.new(@file_path)
   end
 
   def test_sheet_count
@@ -27,8 +22,8 @@ class OdsTest < Test::Unit::TestCase
 
     assert_not_equal modified_name, @ods.sheets[offset].name
     @ods.sheets[offset].name = modified_name
-    @ods.save(@file_path)
-    modified_ods = Ods.new(@file_path)
+    @ods.save(@modified_file_path)
+    modified_ods = Ods.new(@modified_file_path)
     assert_equal modified_name, modified_ods.sheets[offset].name
   end
 
@@ -46,8 +41,8 @@ class OdsTest < Test::Unit::TestCase
     modified_text = '酢味噌'
     assert_not_equal modified_text, sheet[row, col].value
     sheet[row, col].value = modified_text
-    @ods.save(@file_path)
-    modified_ods = Ods.new(@file_path)
+    @ods.save(@modified_file_path)
+    modified_ods = Ods.new(@modified_file_path)
     assert_equal modified_text, modified_ods.sheets[sheet_offset][row, col].value
   end
 
@@ -82,9 +77,9 @@ class OdsTest < Test::Unit::TestCase
     row = 10
     col = :C
     sheet[row, col].value = 'hoge'
-    @ods.save(@file_path)
+    @ods.save(@modified_file_path)
 
-    modified_ods = Ods.new(@file_path)
+    modified_ods = Ods.new(@modified_file_path)
     sheet = modified_ods.sheets[modified_ods.sheets.length-1]
     assert_equal "3", sheet.column.attr('repeated')
   end
@@ -130,3 +125,4 @@ class OdsTest < Test::Unit::TestCase
     assert_equal :B, sheet.rows.last.cols.last.no
   end
 end
+

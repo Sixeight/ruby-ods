@@ -47,11 +47,17 @@ class Ods
     Zip::ZipFile.open(@path) do |zip|
       @content = Nokogiri::XML::Document.parse(zip.read('content.xml'))
     end
-    @sheets = []
-    @content.root.xpath(XPATH_SHEETS).each do |sheet|
-      @sheets.push(Sheet.new(sheet))
+    @sheets = @content.root.xpath(XPATH_SHEETS).map {|sheet| Sheet.new(sheet) }
+    yield self if block_given?
+  end
+
+  (class << self; self end).__send__ :alias_method, :parse, :new
+
+  def self.each_sheet(path)
+    ods = new path
+    ods.sheets.each do |sheet|
+      yield sheet
     end
-    @content
   end
 
   def save(dest=nil)
@@ -112,7 +118,7 @@ class Ods
                                                'table:style-name' => 'ro1'), rows.length+1))
       end
       row = rows[row-1]
-      col = ('A'..col.to_s).to_a.index(col.to_s)
+      col = [*'A'..col.to_s].index(col.to_s)
       cols = row.cols
       (col - cols.length + 1).times do
         no = (cols.last) ? cols.last.no.to_s.succ : 'A'
